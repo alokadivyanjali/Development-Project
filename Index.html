@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botanical Smart Bin System</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root { 
+            --primary: #2d6a4f; --primary-light: #40916c; --accent: #52b788; 
+            --bg: #f8fcf8; --card: #ffffff; --text-dark: #1b4332; --text-muted: #748c82;
+            --danger: #e63946; --warning: #f4a261;
+        }
+        body { font-family: 'Poppins', sans-serif; margin: 0; background: var(--bg); color: var(--text-dark); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* =========================================
+           MODERN AUTHENTICATION SCREEN
+           ========================================= */
+        #auth-screen { 
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; 
+            background: linear-gradient(rgba(10, 25, 18, 0.7), rgba(27, 67, 50, 0.8)), 
+                        url('https://impro.usercontent.one/appid/oneComWsb/domain/caninternational.no/media/caninternational.no/onewebmedia/IMG_0729-2.jpg?etag=%22c18b3-5dd8285c%22&sourceContentType=image%2Fjpeg&quality=85') center/cover no-repeat; 
+            z-index: 1000; 
+        }
+        
+        .modern-auth-card {
+            display: flex;
+            width: 900px;
+            max-width: 95%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* Left Side: Branding & Thesis Info */
+        .auth-brand-side {
+            flex: 1.2;
+            background: linear-gradient(135deg, var(--primary), #1b4332);
+            color: white;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .auth-brand-side::after {
+            content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            background: url('https://www.transparenttextures.com/patterns/cubes.png') opacity(0.1);
+            pointer-events: none;
+        }
+        .auth-brand-side i.main-logo { font-size: 3.5rem; color: var(--accent); margin-bottom: 20px; }
+        .auth-brand-side h1 { margin: 0; font-size: 2.2rem; font-weight: 700; line-height: 1.2; }
+        .auth-brand-side .thesis-title { font-size: 0.9rem; font-family: 'Inter', sans-serif; color: #a3b18a; margin: 15px 0 30px; line-height: 1.6; }
+        
+        .feature-list { display: flex; flex-direction: column; gap: 15px; }
+        .feature-item { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 12px; }
+        .feature-item i { font-size: 1.2rem; color: var(--accent); width: 25px; text-align: center; }
+        .feature-item span { font-size: 0.85rem; font-weight: 500; font-family: 'Inter', sans-serif; }
+
+        /* Right Side: Form */
+        .auth-form-side {
+            flex: 1;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .auth-form-side h2 { margin: 0 0 5px; color: var(--text-dark); font-size: 1.8rem; font-weight: 700; }
+        .auth-form-side p.sub { margin: 0 0 30px; color: var(--text-muted); font-size: 0.9rem; font-family: 'Inter', sans-serif; }
+        
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .input-group input { 
+            width: 100%; box-sizing: border-box; padding: 15px 15px 15px 45px; 
+            border: 2px solid transparent; border-radius: 12px; background: #f1f5f9; 
+            font-family: 'Inter', sans-serif; outline: none; transition: 0.3s; color: var(--text-dark);
+        }
+        .input-group input:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(82, 183, 136, 0.1); }
+        
+        .btn-modern { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; font-family: 'Poppins', sans-serif; font-size: 1rem; margin-bottom: 12px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-login { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(45, 106, 79, 0.2); }
+        .btn-login:hover { background: var(--text-dark); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(27, 67, 50, 0.3); }
+        .btn-register { background: white; color: var(--primary); border: 2px solid #e2e8f0; }
+        .btn-register:hover { border-color: var(--primary); background: #f8fcf8; }
+        
+        .forgot-link { display: block; text-align: center; font-size: 0.85rem; color: var(--primary-light); cursor: pointer; text-decoration: none; margin-top: 10px; font-weight: 500;}
+        .forgot-link:hover { text-decoration: underline; }
+        
+        #auth-error { color: var(--danger); font-size: 0.85rem; margin-top: 15px; text-align: center; font-family: 'Inter', sans-serif; background: #fff0f0; padding: 10px; border-radius: 8px; display: none; }
+
+        @media (max-width: 800px) {
+            .modern-auth-card { flex-direction: column; width: 400px; }
+            .auth-brand-side { padding: 30px; }
+            .auth-form-side { padding: 30px; }
+            .feature-list { display: none; } /* Hide features on small screens to save space */
+        }
+
+        /* =========================================
+           DASHBOARD STYLES (Kept intact)
+           ========================================= */
+        #dashboard-screen { display: none; width: 100%; }
+        .sidebar { width: 300px; background: var(--card); border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; padding: 25px 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.02); overflow-y: auto; }
+        .brand { text-align: center; padding-bottom: 15px; border-bottom: 1px solid #edf2f7; margin-bottom: 15px;}
+        .brand h2 { margin: 10px 0 5px; color: var(--primary); font-size: 1.2rem; }
+        .brand p { margin: 0; font-size: 0.75rem; color: var(--text-muted); font-family: 'Inter', sans-serif; }
+        
+        .user-card { background: #f8fcf8; padding: 12px; border-radius: 12px; border: 1px solid #d8f3dc; margin-bottom: 25px; text-align: center;}
+        .user-card i { font-size: 1.5rem; color: var(--accent); margin-bottom: 5px;}
+        .user-card span { display: block; font-size: 0.8rem; color: var(--text-dark); font-weight: 500; word-break: break-all; }
+        
+        .sidebar-module { background: white; border: 1px solid #eef2f0; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .sidebar-module h4 { margin: 0 0 10px 0; color: var(--primary); font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+        .sidebar-module ul { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; font-family: 'Inter', sans-serif; color: var(--text-dark); }
+        .sidebar-module ul li { margin-bottom: 5px; display: flex; justify-content: space-between; border-bottom: 1px dashed #edf2f7; padding-bottom: 5px; }
+        .sidebar-module ul li:last-child { border: none; margin: 0; padding: 0; }
+        
+        .btn-ai { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Poppins'; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;}
+        .btn-ai:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        #ai-route-result { display: none; background: #f8fcf8; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.75rem; font-family: 'Inter', sans-serif; color: var(--text-dark); border: 1px solid #d8f3dc; line-height: 1.5; }
+        .route-highlight { color: var(--primary); font-weight: 600; }
+
+        .btn-logout { background: #fff0f0; color: var(--danger); border: 1px solid #ffdcdc; padding: 10px; width: 100%; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+        .top-header { background: var(--primary); color: white; padding: 15px 30px; box-shadow: 0 4px 10px rgba(45, 106, 79, 0.15); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        
+        .container { display: flex; flex: 1; padding: 20px; gap: 20px; overflow-y: auto; }
+        
+        .map-wrapper { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
+        .map-section { flex: 1; background: var(--card); border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; position: relative; border: 1px solid #eef2f0; }
+        #map { flex: 1; width: 100%; z-index: 1; }
+        
+        .logistics-card { background: var(--card); padding: 15px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border: 1px solid #eef2f0; }
+        .log-stat { text-align: center; }
+        .log-stat i { font-size: 1.2rem; color: var(--primary-light); margin-bottom: 5px; }
+        .log-stat .val { font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
+        .log-stat p { margin: 0; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        
+        .control-panel { flex: 1; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.03); overflow-y: auto; border: 1px solid #eef2f0; display: flex; flex-direction: column;}
+        .panel-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px dashed #edf2f7; }
+        .panel-header h3 { margin: 0; color: var(--primary); font-size: 1.4rem; }
+        
+        #animal-alert { display: none; background: var(--danger); color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-top: 10px; align-items: center; justify-content: center; gap: 8px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); } 70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); } }
+
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; flex: 1;}
+        .stat-card { background: #f8fcf8; padding: 15px; border-radius: 16px; border: 1px solid #d8f3dc; display: flex; align-items: center; gap: 15px; transition: 0.3s; }
+        .stat-icon { width: 45px; height: 45px; border-radius: 12px; background: #e8f5e9; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem; }
+        .stat-info h4 { margin: 0; color: var(--text-muted); font-size: 0.8rem; font-weight: 500; font-family: 'Inter', sans-serif; }
+        .stat-info .c-val { font-size: 1.3rem; font-weight: 700; color: var(--text-dark); margin-top: 2px; }
+        
+        .card-danger { background: #fff0f0; border-color: #ffdcdc; }
+        .card-danger .stat-icon { background: var(--danger); color: white; }
+        .card-danger .c-val { color: var(--danger); }
+        .card-warning { background: #fffaf0; border-color: #fbd38d; }
+        .card-warning .stat-icon { background: var(--warning); color: white; }
+
+        .timestamp-box { text-align: center; margin-top: 20px; font-size: 0.8rem; color: var(--text-muted); font-family: 'Inter', sans-serif; padding-top: 15px; border-top: 1px solid #edf2f7; }
+        .timestamp-box i { color: var(--primary-light); margin-right: 5px;}
+    </style>
+</head>
+<body>
+
+    <!-- =========================================
+         NEW ENTERPRISE LOGIN SCREEN
+         ========================================= -->
+    <div id="auth-screen">
+        <div class="modern-auth-card">
+            
+            <!-- Left Branding Side -->
+            <div class="auth-brand-side">
+                <i class="fa-solid fa-leaf main-logo"></i>
+                <h1>Smart Gardens</h1>
+                <p class="thesis-title">A Solar-Powered, Energy-Efficient Autonomous Smart Bin with Environmental Sensing & Animal Interference Detection for Botanical Gardens.</p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-solar-panel"></i>
+                        <span>100% Autonomous Solar Power</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-paw"></i>
+                        <span>AI Animal Interference Detection</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-cloud-sun"></i>
+                        <span>Real-time Environmental Sensing</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-route"></i>
+                        <span>Machine Learning Route Logistics</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Form Side -->
+            <div class="auth-form-side">
+                <h2>Staff Portal</h2>
+                <p class="sub">Sign in to access live fleet telemetry.</p>
+                
+                <div class="input-group">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email Address">
+                </div>
+                
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password">
+                </div>
+                
+                <p id="auth-error"></p>
+
+                <button class="btn-modern btn-login" onclick="login()">
+                    Access Dashboard <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button class="btn-modern btn-register" onclick="register()">
+                    Register New Account
+                </button>
+                
+                <a class="forgot-link" onclick="resetPassword()">Forgot Password?</a>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- =========================================
+         MAIN DASHBOARD (Remains fully functional)
+         ========================================= -->
+    <div id="dashboard-screen">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-leaf" style="font-size: 2.5rem; color: var(--primary);"></i>
+                <h2>Smart Gardens</h2>
+                <p>Fleet Management System</p>
+            </div>
+            
+            <div class="user-card">
+                <i class="fa-solid fa-circle-user"></i>
+                <span id="user-email">Loading...</span>
+            </div>
+
+            <!-- Fleet Overview Module -->
+            <div class="sidebar-module">
+                <h4><i class="fa-solid fa-chart-pie"></i> Fleet Overview</h4>
+                <ul>
+                    <li><span>Total Bins:</span> <span>7</span></li>
+                    <li><span>Active Network:</span> <span style="color:var(--accent); font-weight:600;">Mobitel GPRS</span></li>
+                    <li><span>Critical Alerts:</span> <span id="critical-count" style="color:var(--danger); font-weight:600;">0</span></li>
+                </ul>
+            </div>
+
+            <!-- AI Route Optimizer Module -->
+            <div class="sidebar-module">
+                <h4><i class="fa-solid fa-microchip"></i> AI Logistics Optimizer</h4>
+                <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-top: 0;">Nearest-Neighbor heuristic ML algorithm to minimize driving distance for collection.</p>
+                <button class="btn-ai" onclick="generateAIRoute()"><i class="fa-solid fa-route"></i> Generate Optimal Route</button>
+                <div id="ai-route-result"></div>
+            </div>
+            
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="main-content">
+            <div class="top-header">
+                <h3 style="margin:0; font-weight:500; font-size:1.1rem;">A Solar-Powered, Energy-Efficient Autonomous Smart Bin</h3>
+                <span style="font-size:0.85rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px;"><i class="fa-solid fa-signal"></i> System Online</span>
+            </div>
+
+            <div class="container">
+                <!-- Map & Logistics -->
+                <div class="map-wrapper">
+                    <div class="map-section">
+                        <div id="map"></div>
+                    </div>
+                    
+                    <div class="logistics-card">
+                        <div class="log-stat">
+                            <i class="fa-solid fa-location-arrow"></i>
+                            <div class="val" id="distance-calc">0.00 km</div>
+                            <p>Routing Distance</p>
+                        </div>
+                        <div class="log-stat">
+                            <i class="fa-solid fa-tree"></i>
+                            <div class="val" id="co2-calc" style="color: var(--primary-light);">0.00 kg</div>
+                            <p>CO₂ Saved (Smart Routing)</p>
+                        </div>
+                        <div class="log-stat">
+                            <i class="fa-solid fa-truck"></i>
+                            <div class="val" id="dispatch-status">Standby</div>
+                            <p>Fleet Status</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telemetry Area -->
+                <div class="control-panel">
+                    <div class="panel-header">
+                        <h3 id="selected-bin-title">MAIN BIN (IoT Active)</h3>
+                        <p id="selected-bin-status" style="margin-top:5px; font-size:0.9rem; color:var(--text-muted);">Fetching environmental data...</p>
+                        <div id="animal-alert"><i class="fa-solid fa-triangle-exclamation"></i> Animal Interference Detected!</div>
+                    </div>
+
+                    <div class="grid" id="live-data-grid">
+                        <div class="stat-card" id="card-fill">
+                            <div class="stat-icon"><i class="fa-solid fa-trash-can"></i></div>
+                            <div class="stat-info"><h4>Fill Level</h4><div class="c-val" id="fill">--%</div></div>
+                        </div>
+                        <div class="stat-card" id="card-temp">
+                            <div class="stat-icon"><i class="fa-solid fa-temperature-half"></i></div>
+                            <div class="stat-info"><h4>Temperature</h4><div class="c-val" id="temp">--°C</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-droplet"></i></div>
+                            <div class="stat-info"><h4>Humidity</h4><div class="c-val" id="humidity">--%</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-leaf"></i></div>
+                            <div class="stat-info"><h4>Waste Type</h4><div class="c-val" id="moisture">--</div></div>
+                        </div>
+                        <div class="stat-card" id="card-smoke">
+                            <div class="stat-icon"><i class="fa-solid fa-smog"></i></div>
+                            <div class="stat-info"><h4>Smoke/Gas</h4><div class="c-val" id="smoke">--</div></div>
+                        </div>
+                        <div class="stat-card" id="card-tilt">
+                            <div class="stat-icon"><i class="fa-solid fa-arrows-down-to-line"></i></div>
+                            <div class="stat-info"><h4>Tilt Status</h4><div class="c-val" id="tilt">--</div></div>
+                        </div>
+                    </div>
+                    
+                    <div class="timestamp-box">
+                        <i class="fa-regular fa-clock"></i> Last Data Synchronization: <span id="time-display" style="font-weight: 600;">Awaiting...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase & Map Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 1. FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrGKIXCkjiTWfxSWWPpOpdnDR9YjFBPXo",
+            authDomain: "smartbin-thesis.firebaseapp.com",
+            databaseURL: "https://smartbin-thesis-default-rtdb.firebaseio.com",
+            projectId: "smartbin-thesis",
+            storageBucket: "smartbin-thesis.firebasestorage.app",
+            messagingSenderId: "671856858522",
+            appId: "1:671856858522:web:db6786743bf5bd8fe31623"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // 2. AUTH LOGIC
+        const authScreen = document.getElementById('auth-screen');
+        const dashScreen = document.getElementById('dashboard-screen');
+        const errorMsg = document.getElementById('auth-error');
+
+        function showError(msg) {
+            errorMsg.innerText = msg;
+            errorMsg.style.display = "block";
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                authScreen.style.display = 'none'; dashScreen.style.display = 'flex';
+                document.getElementById('user-email').innerText = user.email;
+                setTimeout(initMap, 100); 
+                fetchRealBinData();
+            } else {
+                authScreen.style.display = 'flex'; dashScreen.style.display = 'none';
+            }
+        });
+        function register() { auth.createUserWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(e => showError(e.message)); }
+        function login() { auth.signInWithEmailAndPassword(document.getElementById('email').value, document.getElementById('password').value).catch(e => showError(e.message)); }
+        function logout() { auth.signOut(); }
+        function resetPassword() {
+            const e = document.getElementById('email').value;
+            if(!e) return showError("Enter your email address to reset password.");
+            auth.sendPasswordResetEmail(e).then(()=> {
+                errorMsg.style.color = "var(--primary)";
+                errorMsg.style.background = "#d8f3dc";
+                showError("Password reset email sent! Check your inbox.");
+            }).catch(e=> showError(e.message));
+        }
+
+        // 3. MAP & ROUTING LOGIC (Intact from previous working version)
+        let mapInitialized = false; let mapInstance = null;
+        let selectedBinId = "MAIN BIN (IoT Active)";
+        let realBinData = null;
+        let routingPolyline = null; 
+
+        const BASE_LAT = 8.0570; const BASE_LNG = 80.2806;
+
+        const binLocations = {
+            "MAIN BIN (IoT Active)": { lat: 7.9886, lng: 80.2879, status: "Live Sensor Stream" },
+            "Botanical Sector A": { lat: 8.0410, lng: 80.2750, status: "Simulated Data", data: { fill: 40, temp: 31, humidity: 65, moisture: "DRY", smoke: 120, tilt: "SAFE" } },
+            "Orchid Garden Bin": { lat: 8.0125, lng: 80.2950, status: "Simulated Data", data: { fill: 95, temp: 29, humidity: 80, moisture: "WET", smoke: 110, tilt: "SAFE" } },
+            "Monkey Trail Bin": { lat: 7.9990, lng: 80.2650, status: "Simulated Data", data: { fill: 15, temp: 34, humidity: 55, moisture: "DRY", smoke: 105, tilt: "TILTED" } },
+            "Rose Garden Bin": { lat: 8.0350, lng: 80.2820, status: "Simulated Data", data: { fill: 88, temp: 30, humidity: 60, moisture: "DRY", smoke: 130, tilt: "SAFE" } },
+            "Lotus Pond Bin": { lat: 8.0200, lng: 80.2600, status: "Simulated Data", data: { fill: 92, temp: 28, humidity: 75, moisture: "WET", smoke: 90, tilt: "SAFE" } },
+            "Picnic Area Bin": { lat: 8.0050, lng: 80.2900, status: "Simulated Data", data: { fill: 30, temp: 32, humidity: 62, moisture: "DRY", smoke: 100, tilt: "SAFE" } }
+        };
+
+        function calcDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(2);
+        }
+
+        function generateAIRoute() {
+            let toVisit = [];
+            let criticalCount = 0;
+
+            Object.keys(binLocations).forEach(id => {
+                let data = (id === "MAIN BIN (IoT Active)" && realBinData) ? realBinData : binLocations[id].data;
+                if (data && (parseInt(data.fill) >= 80 || data.tilt === "TILTED")) {
+                    toVisit.push({ id: id, lat: binLocations[id].lat, lng: binLocations[id].lng });
+                    criticalCount++;
+                }
+            });
+
+            document.getElementById('critical-count').innerText = criticalCount;
+            const resBox = document.getElementById('ai-route-result');
+
+            if (routingPolyline) { mapInstance.removeLayer(routingPolyline); routingPolyline = null; }
+
+            if(toVisit.length === 0) {
+                resBox.style.display = "block";
+                resBox.innerHTML = "<i class='fa-solid fa-check-circle' style='color:var(--accent);'></i> <b>System Optimal:</b> No bins currently require emergency collection or exceed thresholds.";
+                mapInstance.setView([BASE_LAT, BASE_LNG], 12);
+                return;
+            }
+
+            let currentLoc = { lat: BASE_LAT, lng: BASE_LNG, id: "HQ Base" };
+            let routeSteps = ["HQ Base"];
+            let routeCoords = [[BASE_LAT, BASE_LNG]]; 
+            let totalDist = 0;
+
+            while(toVisit.length > 0) {
+                let nearestIdx = 0; let minDist = Infinity;
+                for(let i=0; i < toVisit.length; i++) {
+                    let d = parseFloat(calcDistance(currentLoc.lat, currentLoc.lng, toVisit[i].lat, toVisit[i].lng));
+                    if(d < minDist) { minDist = d; nearestIdx = i; }
+                }
+                totalDist += minDist;
+                currentLoc = toVisit[nearestIdx];
+                routeSteps.push(currentLoc.id);
+                routeCoords.push([currentLoc.lat, currentLoc.lng]);
+                toVisit.splice(nearestIdx, 1);
+            }
+            
+            totalDist += parseFloat(calcDistance(currentLoc.lat, currentLoc.lng, BASE_LAT, BASE_LNG));
+            routeSteps.push("Return to HQ");
+            routeCoords.push([BASE_LAT, BASE_LNG]);
+
+            routingPolyline = L.polyline(routeCoords, {
+                color: '#e63946',
+                weight: 4,
+                dashArray: '10, 10',
+                opacity: 0.8,
+                lineJoin: 'round'
+            }).addTo(mapInstance);
+            
+            mapInstance.fitBounds(routingPolyline.getBounds(), {padding: [40, 40]});
+
+            resBox.style.display = "block";
+            resBox.innerHTML = `
+                <div style="margin-bottom:8px;"><span class="route-highlight">AI Sequence:</span><br>${routeSteps.join(" <i class='fa-solid fa-arrow-right' style='font-size:0.6rem;'></i> ")}</div>
+                <div style="border-top:1px dashed #d8f3dc; padding-top:8px;">
+                    <span class="route-highlight">Total Est. Distance:</span> ${totalDist.toFixed(2)} km<br>
+                    <span class="route-highlight">Est. Fuel Savings:</span> ~${((totalDist * 0.12)).toFixed(2)} Liters
+                </div>
+            `;
+        }
+
+        function updateLogistics(dist, fillLevel) {
+            document.getElementById('distance-calc').innerText = dist + " km";
+            const co2Saved = (dist * 2 * 0.65).toFixed(2); 
+            document.getElementById('co2-calc').innerText = (fillLevel < 85) ? `${co2Saved} kg` : `0.00 kg`;
+            const dispatch = document.getElementById('dispatch-status');
+            if (fillLevel >= 85) { dispatch.innerText = "Dispatch Required"; dispatch.style.color = "var(--danger)"; } 
+            else { dispatch.innerText = "Optimized / Skip"; dispatch.style.color = "var(--primary-light)"; }
+        }
+
+        function initMap() {
+            if(mapInitialized) return; mapInitialized = true;
+            mapInstance = L.map('map').setView([8.02, 80.28], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mapInstance);
+
+            const hqIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', iconSize: [25, 41], iconAnchor: [12, 41] });
+            L.marker([BASE_LAT, BASE_LNG], {icon: hqIcon}).addTo(mapInstance).bindPopup("<b>HQ / Base Station</b>").openPopup();
+
+            const binIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', iconSize: [25, 41], iconAnchor: [12, 41] });
+
+            Object.keys(binLocations).forEach(binId => {
+                const marker = L.marker([binLocations[binId].lat, binLocations[binId].lng], {icon: binIcon}).addTo(mapInstance);
+                marker.bindPopup(`<b>${binId}</b>`);
+                marker.on('click', () => {
+                    selectedBinId = binId;
+                    document.getElementById('selected-bin-title').innerText = binId;
+                    document.getElementById('selected-bin-status').innerText = binLocations[binId].status;
+                    updateTelemetryUI();
+                });
+            });
+        }
+
+        const DB_URL = firebaseConfig.databaseURL + "/sensor_data.json";
+
+        async function fetchRealBinData() {
+            try {
+                const res = await fetch(DB_URL);
+                realBinData = await res.json();
+                if (selectedBinId === "MAIN BIN (IoT Active)") updateTelemetryUI();
+            } catch (err) { console.error(err); }
+            setTimeout(fetchRealBinData, 8000); 
+        }
+
+        function updateTelemetryUI() {
+            let activeData;
+            if (selectedBinId === "MAIN BIN (IoT Active)") { if (!realBinData) return; activeData = realBinData; } 
+            else { activeData = binLocations[selectedBinId].data; }
+
+            document.getElementById('fill').innerText = activeData.fill + "%";
+            document.getElementById('temp').innerText = activeData.temp + "°C";
+            document.getElementById('humidity').innerText = activeData.humidity + "%";
+            document.getElementById('moisture').innerText = activeData.moisture;
+            document.getElementById('smoke').innerText = activeData.smoke;
+            document.getElementById('tilt').innerText = activeData.tilt;
+
+            const animalAlert = document.getElementById('animal-alert');
+            if (activeData.tilt === "TILTED") { animalAlert.style.display = "flex"; } else { animalAlert.style.display = "none"; }
+
+            document.getElementById('card-fill').className = parseInt(activeData.fill) >= 85 ? "stat-card card-warning" : "stat-card";
+            document.getElementById('card-temp').className = parseInt(activeData.temp) >= 50 ? "stat-card card-danger" : "stat-card";
+            document.getElementById('card-smoke').className = parseInt(activeData.smoke) >= 1800 ? "stat-card card-danger" : "stat-card";
+            document.getElementById('card-tilt').className = activeData.tilt === "TILTED" ? "stat-card card-danger" : "stat-card";
+            
+            const coords = binLocations[selectedBinId];
+            updateLogistics(calcDistance(BASE_LAT, BASE_LNG, coords.lat, coords.lng), parseInt(activeData.fill));
+            
+            const now = new Date();
+            document.getElementById('time-display').innerText = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+            
+            let criticalCount = 0;
+            Object.keys(binLocations).forEach(id => {
+                let d = (id === "MAIN BIN (IoT Active)" && realBinData) ? realBinData : binLocations[id].data;
+                if (d && (parseInt(d.fill) >= 80 || d.tilt === "TILTED")) criticalCount++;
+            });
+            document.getElementById('critical-count').innerText = criticalCount;
+        }
+    </script>
+</body>
+</html>
